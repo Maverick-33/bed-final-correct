@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+
+  provider = "sqlite"
+  url      = "file:./dev.db"
+  relationMode = "prisma"
+
+}
+
+model Amenity {
+  id       String     @id @default(uuid())
+  name     String
+  Property Property[] @relation("PropertyAmenities")
+}
+
+model Booking {
+  id             String   @id @default(uuid())
+  startDate      DateTime
+  endDate        DateTime
+  numberOfGuests Int
+  totalPrice     Float
+  bookingStatus  String
+  propertyId     String
+  userId         String
+  Property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Host {
+  id             String     @id @default(uuid())
+  username       String     @unique
+  name           String
+  email          String
+  phoneNumber    String
+  profilePicture String?
+  aboutMe        String?
+  Property       Property[]
+}
+
+model Property {
+  id            String    @id @default(uuid())
+  title         String
+  description   String
+  location      String
+  pricePerNight Float
+  bedroomCount  Int
+  bathRoomCount Int
+  maxGuestCount Int
+  rating        Float
+  hostId        String
+  Booking       Booking[]
+  Host          Host      @relation(fields: [hostId], references: [id])
+
+  @@index([hostId])
+  Review        Review[]
+  Amenity       Amenity[] @relation("PropertyAmenities")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rating     Float
+  comment    String?
+  propertyId String
+  userId     String
+  Property   Property @relation(fields: [propertyId], references: [id])
+
+  @@index([propertyId])
+  User       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model User {
+  id             String    @id @default(uuid())
+  username       String    @unique
+  name           String
+  password       String
+  email          String
+  phoneNumber    String
+  profilePicture String?
+  Booking        Booking[]
+  Review         Review[]
+}
